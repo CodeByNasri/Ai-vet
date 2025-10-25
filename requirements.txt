@@ -1,0 +1,18 @@
+# Core ML and Deep Learning
+torch>=1.9.0
+torchvision>=0.10.0
+torchaudio>=0.9.0
+
+# Computer Vision and Image Processing
+opencv-python>=4.5.0
+Pillow>=8.0.0
+albumentations>=1.0.0
+
+# Data Science and Analysis
+numpy>=1.21.0
+pandas>=1.3.0
+matplotlib>=3.4.0
+seaborn>=0.11.0
+scikit-learn>=1.0.0
+
+# Note: tkinter, pathlib, json, time, datetime, re, os are built-in Python modules

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Weight Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>🐛 Debug Weight Prediction</h1>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Test Form</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="debugForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Select Image</label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Test Prediction</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Debug Info</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debugInfo">
+                            <p>Click "Test Prediction" to see debug info</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>System Status</h5>
+                </div>
+                <div class="card-body">
+                    <div id="systemStatus">
+                        <p>Loading system status...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Load system status
+    fetch('/debug-info/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('systemStatus').innerHTML = `
+                <p><strong>Models Loaded:</strong> ${data.models_loaded ? data.models_loaded.join(', ') : 'None'}</p>
+                <p><strong>Django Debug:</strong> ${data.django_debug ? 'Yes' : 'No'}</p>
+                <p><strong>Device:</strong> ${data.device || 'Unknown'}</p>
+            `;
+        })
+        .catch(error => {
+            document.getElementById('systemStatus').innerHTML = `<p class="text-danger">Error loading system status: ${error}</p>`;
+        });
+
+    // Handle form submission
+    document.getElementById('debugForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        const imageFile = document.getElementById('image').files[0];
+        
+        if (!imageFile) {
+            alert('Please select an image file');
+            return;
+        }
+        
+        formData.append('image', imageFile);
+        
+        // Show loading
+        document.getElementById('debugInfo').innerHTML = '<p class="text-info">Processing...</p>';
+        
+        // Submit form
+        fetch('/debug-weight/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('debugInfo').innerHTML = `
+                <h6>Result:</h6>
+                <pre class="bg-light p-3">${JSON.stringify(data, null, 2)}</pre>
+            `;
+        })
+        .catch(error => {
+            document.getElementById('debugInfo').innerHTML = `
+                <p class="text-danger">Error: ${error}</p>
+            `;
+        });
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+
+{% block title %}Animal Classification - Livestock AI{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-primary">
+                    <i class="bi bi-tags"></i> Animal Classification
+                </h1>
+                <p class="lead text-muted">
+                    Identify livestock types: Cattle, Sheep, Goats, and Camels
+                </p>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="card">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" id="classificationForm">
+                        {% csrf_token %}
+                        <div class="upload-area" id="uploadArea">
+                            <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
+                            <h5>Upload Animal Image</h5>
+                            <p class="text-muted mb-3">
+                                Drag and drop your image here, or click to browse
+                            </p>
+                            <input type="file" name="image" id="imageInput" accept="image/*" required class="d-none">
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('imageInput').click()">
+                                <i class="bi bi-folder2-open"></i> Choose File
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="bi bi-cpu"></i> Classify Animal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results -->
+            {% if result %}
+            <div class="result-card mt-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="mb-3">
+                            <i class="bi bi-check-circle"></i> Classification Results
+                        </h3>
+                        {% if result.status == 'success' %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="mb-2">Predicted Class</h4>
+                                <h2 class="text-warning fw-bold">{{ result.predicted_class }}</h2>
+                                <p class="mb-0">Confidence: {{ result.confidence }}%</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h4 class="mb-2">Model Type</h4>
+                                <p class="mb-0">{{ result.model_type }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Class Probabilities -->
+                        {% if result.class_probabilities %}
+                        <div class="mt-4">
+                            <h5>All Class Probabilities:</h5>
+                            <div class="row">
+                                {% for class_name, probability in result.class_probabilities.items %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>{{ class_name }}</span>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress me-2" style="width: 100px; height: 8px;">
+                                                <div class="progress-bar {% if class_name == result.predicted_class %}bg-success{% else %}bg-secondary{% endif %}" 
+                                                     style="width: {{ probability }}%"></div>
+                                            </div>
+                                            <small class="text-muted">{{ probability }}%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div class="alert alert-danger">
+                            <h5><i class="bi bi-exclamation-triangle"></i> Error</h5>
+                            <p class="mb-0">{{ result.error }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="bg-white bg-opacity-25 rounded p-3">
+                            <i class="bi bi-tags display-4"></i>
+                            <p class="mb-0 mt-2">Classification</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Results Container for AJAX -->
+            <div id="resultsContainer" style="display: none;">
+                <!-- Results will be displayed here via JavaScript -->
+            </div>
+
+            <!-- Error Display -->
+            {% if error %}
+            <div class="alert alert-danger mt-4">
+                <h5><i class="bi bi-exclamation-triangle"></i> Error</h5>
+                <p class="mb-0">{{ error }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Debug Info -->
+            {% if debug_info %}
+            <div class="alert alert-info mt-4">
+                <h5><i class="bi bi-bug"></i> Debug Info</h5>
+                <p class="mb-0">{{ debug_info }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Form Debug -->
+            <div class="card mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bug"></i> Form Debug (This will help us see what's happening)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="formDebug">
+                        <p>Form ready. Upload an image and click "Classify Animal" to see debug info.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Animal Types Info -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Supported Animal Types
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="bi bi-bug display-4 text-primary"></i>
+                            <h6 class="mt-2">Cattle</h6>
+                            <small class="text-muted">Bovine animals</small>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="bi bi-heart display-4 text-success"></i>
+                            <h6 class="mt-2">Sheep</h6>
+                            <small class="text-muted">Ovine animals</small>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="bi bi-star display-4 text-warning"></i>
+                            <h6 class="mt-2">Goats</h6>
+                            <small class="text-muted">Caprine animals</small>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="bi bi-sun display-4 text-danger"></i>
+                            <h6 class="mt-2">Camels</h6>
+                            <small class="text-muted">Camelid animals</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const form = document.getElementById('classificationForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // File input change handler
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Update upload area display
+            uploadArea.innerHTML = `
+                <i class="bi bi-image display-4 text-success mb-3"></i>
+                <h5>Selected: ${file.name}</h5>
+                <p class="text-muted mb-3">Ready to classify</p>
+                <button type="button" class="btn btn-outline-secondary" id="changeFileBtn">
+                    <i class="bi bi-arrow-clockwise"></i> Change File
+                </button>
+            `;
+            
+            // Add event listener to the new button
+            document.getElementById('changeFileBtn').addEventListener('click', function() {
+                document.getElementById('imageInput').click();
+            });
+        }
+    });
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // PREVENT DEFAULT FORM SUBMISSION
+        console.log('Classification form submission started');
+        
+        // Update debug info
+        document.getElementById('formDebug').innerHTML = '<p class="text-info">🔄 Form submission started...</p>';
+        
+        if (!imageInput.files[0]) {
+            alert('Please select an image file first.');
+            document.getElementById('formDebug').innerHTML = '<p class="text-danger">❌ No image file selected</p>';
+            return;
+        }
+        
+        console.log('Image file selected:', imageInput.files[0].name);
+        document.getElementById('formDebug').innerHTML = `
+            <p class="text-success">✅ Image file selected: ${imageInput.files[0].name}</p>
+            <p class="text-info">📁 File size: ${(imageInput.files[0].size / 1024).toFixed(1)} KB</p>
+            <p class="text-info">🔄 Submitting form via AJAX...</p>
+        `;
+        
+        // Show loading state
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Classifying...';
+        submitBtn.disabled = true;
+        
+        // Submit form via AJAX
+        const formData = new FormData();
+        formData.append('image', imageInput.files[0]);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        console.log('FormData contents:');
+        for (let [key, value] of formData.entries()) {
+            console.log(key, value);
+        }
+        
+        fetch('/classification/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Response received:', response.status);
+            document.getElementById('formDebug').innerHTML += '<p class="text-info">📡 Response received from server</p>';
+            return response.text();
+        })
+        .then(html => {
+            console.log('Response HTML received');
+            document.getElementById('formDebug').innerHTML += '<p class="text-success">✅ Server response received</p>';
+            
+            // Parse the response and extract debug info
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Check for debug info
+            const debugInfo = doc.querySelector('.alert-info');
+            if (debugInfo) {
+                document.getElementById('formDebug').innerHTML += `<p class="text-info">🔍 ${debugInfo.textContent.trim()}</p>`;
+            }
+            
+            // Check for results and display them
+            const resultCard = doc.querySelector('.result-card');
+            if (resultCard) {
+                document.getElementById('formDebug').innerHTML += '<p class="text-success">🎉 Results found in response!</p>';
+                
+                // Extract classification from result
+                const classElement = resultCard.querySelector('.text-warning, .text-primary');
+                if (classElement) {
+                    document.getElementById('formDebug').innerHTML += `<p class="text-success">🏷️ Predicted Class: ${classElement.textContent}</p>`;
+                    
+                    // Display the results in the main results section
+                    const resultsContainer = document.querySelector('#resultsContainer');
+                    if (resultsContainer) {
+                        resultsContainer.innerHTML = resultCard.innerHTML;
+                        resultsContainer.style.display = 'block';
+                    }
+                }
+            }
+            
+            // Check for errors
+            const errorAlert = doc.querySelector('.alert-danger');
+            if (errorAlert) {
+                document.getElementById('formDebug').innerHTML += `<p class="text-danger">❌ Error: ${errorAlert.textContent.trim()}</p>`;
+            }
+            
+            // Reset button
+            submitBtn.innerHTML = '<i class="bi bi-tags"></i> Classify Animal';
+            submitBtn.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('formDebug').innerHTML += `<p class="text-danger">❌ AJAX Error: ${error}</p>`;
+            
+            // Reset button
+            submitBtn.innerHTML = '<i class="bi bi-tags"></i> Classify Animal';
+            submitBtn.disabled = false;
+        });
+        
+        console.log('Form submitted via AJAX, waiting for response...');
+    });
+});
+</script>
+{% endblock %}

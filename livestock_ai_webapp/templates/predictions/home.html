@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}Livestock AI - Smart Animal Analysis{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-4 fw-bold text-primary mb-4">
+                <i class="bi bi-cpu"></i> Livestock AI
+            </h1>
+            <p class="lead text-muted mb-4">
+                Advanced machine learning models for comprehensive livestock analysis, 
+                health monitoring, and intelligent farming solutions.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'weight_prediction' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-speedometer2"></i> Start Analysis
+                </a>
+                <a href="{% url 'history' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-clock-history"></i> View History
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-speedometer2"></i>
+                </div>
+                <h4>Weight Estimation</h4>
+                <p class="text-muted">Accurately predict livestock weight from images using advanced computer vision.</p>
+                <a href="{% url 'weight_prediction' %}" class="btn btn-outline-primary">
+                    Try Now <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-tags"></i>
+                </div>
+                <h4>Animal Classification</h4>
+                <p class="text-muted">Identify different livestock types: cattle, sheep, goats, and camels.</p>
+                <a href="{% url 'classification' %}" class="btn btn-outline-primary">
+                    Try Now <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-paw"></i>
+                </div>
+                <h4>Hoofed Animals</h4>
+                <p class="text-muted">Multi-label classification for detailed hoofed animal analysis.</p>
+                <a href="{% url 'hoofed_animals' %}" class="btn btn-outline-primary">
+                    Try Now <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <h4>Disease Detection</h4>
+                <p class="text-muted">Early detection of lumpy skin disease and other health conditions.</p>
+                <a href="{% url 'disease_detection' %}" class="btn btn-outline-primary">
+                    Try Now <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Predictions -->
+    {% if recent_predictions %}
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Recent Predictions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for prediction in recent_predictions %}
+                    <div class="prediction-item">
+                        <div class="row align-items-center">
+                            <div class="col-md-2">
+                                <img src="{{ prediction.image.url }}" alt="Prediction" class="img-fluid rounded" style="max-height: 60px;">
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-1">{{ prediction.get_prediction_type_display }}</h6>
+                                <small class="text-muted">{{ prediction.created_at|date:"M d, Y H:i" }}</small>
+                            </div>
+                            <div class="col-md-2">
+                                {% if prediction.confidence %}
+                                <span class="badge bg-success">{{ prediction.confidence|floatformat:1 }}%</span>
+                                {% else %}
+                                <span class="badge bg-info">Completed</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <a href="{% url 'delete_prediction' prediction.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- How It Works -->
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h3 class="mb-4">How It Works</h3>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-upload fs-4"></i>
+                        </div>
+                        <h5 class="mt-3">1. Upload Image</h5>
+                        <p class="text-muted">Upload a clear image of your livestock</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-cpu fs-4"></i>
+                        </div>
+                        <h5 class="mt-3">2. AI Analysis</h5>
+                        <p class="text-muted">Our models analyze the image using advanced AI</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-graph-up fs-4"></i>
+                        </div>
+                        <h5 class="mt-3">3. Get Results</h5>
+                        <p class="text-muted">Receive detailed analysis and predictions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

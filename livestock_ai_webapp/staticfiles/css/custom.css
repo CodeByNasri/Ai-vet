@@ -1,0 +1,192 @@
+/* Custom CSS for Livestock AI Web Application */
+
+:root {
+    --primary-color: #2c5530;
+    --secondary-color: #4a7c59;
+    --accent-color: #8fbc8f;
+    --light-bg: #f8f9fa;
+    --dark-text: #2c3e50;
+}
+
+/* Custom animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Custom button styles */
+.btn-custom {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 12px 30px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Custom card styles */
+.card-custom {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.card-custom:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+/* Loading spinner */
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Progress bars */
+.progress-custom {
+    height: 10px;
+    border-radius: 5px;
+    background-color: rgba(255,255,255,0.2);
+}
+
+.progress-bar-custom {
+    border-radius: 5px;
+    transition: width 0.6s ease;
+}
+
+/* Alert styles */
+.alert-custom {
+    border: none;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+}
+
+/* Upload area styles */
+.upload-area-custom {
+    border: 2px dashed var(--accent-color);
+    border-radius: 15px;
+    padding: 3rem;
+    text-align: center;
+    background: rgba(143, 188, 143, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area-custom:hover {
+    border-color: var(--primary-color);
+    background: rgba(44, 85, 48, 0.1);
+}
+
+.upload-area-custom.dragover {
+    border-color: var(--primary-color);
+    background: rgba(44, 85, 48, 0.2);
+    transform: scale(1.02);
+}
+
+/* Result card styles */
+.result-card-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 1rem 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Feature card styles */
+.feature-card-custom {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.feature-card-custom:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+/* Icon styles */
+.icon-custom {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.feature-card-custom:hover .icon-custom {
+    transform: scale(1.1);
+    color: var(--secondary-color);
+}
+
+/* Badge styles */
+.badge-custom {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .display-5 {
+        font-size: 1.8rem;
+    }
+    
+    .upload-area-custom {
+        padding: 2rem 1rem;
+    }
+    
+    .result-card-custom {
+        padding: 1.5rem;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --light-bg: #1a1a1a;
+        --dark-text: #ffffff;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        color: var(--dark-text);
+    }
+    
+    .card {
+        background-color: #2d2d2d;
+        color: var(--dark-text);
+    }
+}

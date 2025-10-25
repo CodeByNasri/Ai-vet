@@ -1,0 +1,373 @@
+{% extends 'predictor/base.html' %}
+
+{% block title %}Livestock AI - Smart Animal Analysis{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary mb-3">
+            <i class="fas fa-brain me-3"></i>Livestock AI
+        </h1>
+        <p class="lead text-muted">Advanced AI-powered livestock analysis for weight estimation, disease detection, and animal classification</p>
+    </div>
+
+    <!-- Features -->
+    <div class="row mb-5">
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-weight-hanging feature-icon"></i>
+                    <h5 class="card-title">Weight Estimation</h5>
+                    <p class="card-text">Accurate weight prediction using computer vision</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-heartbeat feature-icon"></i>
+                    <h5 class="card-title">Disease Detection</h5>
+                    <p class="card-text">Detect lumpy skin disease and other health issues</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-paw feature-icon"></i>
+                    <h5 class="card-title">Animal Classification</h5>
+                    <p class="card-text">Identify cattle, sheep, goats, and camels</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-chart-line feature-icon"></i>
+                    <h5 class="card-title">Analytics</h5>
+                    <p class="card-text">Track predictions and analyze results</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Image for Analysis</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Upload Form -->
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="upload-area" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                            <h5>Drag & Drop your image here</h5>
+                            <p class="text-muted">or click to browse files</p>
+                            <input type="file" id="imageInput" name="image" accept="image/*" class="d-none" required>
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('imageInput').click()">
+                                <i class="fas fa-folder-open me-2"></i>Choose File
+                            </button>
+                        </div>
+                        
+                        <!-- Prediction Type Selection -->
+                        <div class="mt-4">
+                            <label class="form-label fw-bold">Analysis Type:</label>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="type" id="all" value="all" checked>
+                                        <label class="form-check-label" for="all">
+                                            <i class="fas fa-list me-1"></i>All Analysis
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="type" id="weight" value="weight">
+                                        <label class="form-check-label" for="weight">
+                                            <i class="fas fa-weight-hanging me-1"></i>Weight Only
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="type" id="disease" value="disease">
+                                        <label class="form-check-label" for="disease">
+                                            <i class="fas fa-heartbeat me-1"></i>Disease Only
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="type" id="classification" value="classification">
+                                        <label class="form-check-label" for="classification">
+                                            <i class="fas fa-paw me-1"></i>Classification Only
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn">
+                                <i class="fas fa-magic me-2"></i>Analyze Image
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Loading Indicator -->
+                    <div class="loading text-center mt-4" id="loading">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Analyzing image... This may take a few moments.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="row mt-5" id="resultsSection" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Analysis Results</h4>
+                </div>
+                <div class="card-body" id="resultsContent">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    const uploadArea = $('#uploadArea');
+    const imageInput = $('#imageInput');
+    const uploadForm = $('#uploadForm');
+    const loading = $('#loading');
+    const resultsSection = $('#resultsSection');
+    const resultsContent = $('#resultsContent');
+    const analyzeBtn = $('#analyzeBtn');
+
+    // Drag and drop functionality
+    uploadArea.on('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.addClass('dragover');
+    });
+
+    uploadArea.on('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.removeClass('dragover');
+    });
+
+    uploadArea.on('drop', function(e) {
+        e.preventDefault();
+        uploadArea.removeClass('dragover');
+        const files = e.originalEvent.dataTransfer.files;
+        if (files.length > 0) {
+            imageInput[0].files = files;
+            updateUploadArea();
+        }
+    });
+
+    // Click to upload
+    uploadArea.on('click', function() {
+        imageInput.click();
+    });
+
+    // File input change
+    imageInput.on('change', function() {
+        updateUploadArea();
+    });
+
+    function updateUploadArea() {
+        const file = imageInput[0].files[0];
+        if (file) {
+            uploadArea.html(`
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h5>File Selected</h5>
+                <p class="text-muted">${file.name}</p>
+                <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('imageInput').click()">
+                    <i class="fas fa-edit me-2"></i>Change File
+                </button>
+            `);
+        }
+    }
+
+    // Form submission
+    uploadForm.on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const selectedType = $('input[name="type"]:checked').val();
+        
+        // Show loading
+        loading.show();
+        resultsSection.hide();
+        analyzeBtn.prop('disabled', true);
+        
+        $.ajax({
+            url: '{% url "predict" %}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                loading.hide();
+                analyzeBtn.prop('disabled', false);
+                
+                if (response.success) {
+                    displayResults(response.results, response.image_name);
+                } else {
+                    showError('Analysis failed: ' + (response.error || 'Unknown error'));
+                }
+            },
+            error: function(xhr) {
+                loading.hide();
+                analyzeBtn.prop('disabled', false);
+                
+                let errorMsg = 'Analysis failed';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                }
+                showError(errorMsg);
+            }
+        });
+    });
+
+    function displayResults(results, imageName) {
+        let html = `
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <img src="#" alt="Uploaded Image" class="img-fluid rounded" id="previewImage" style="max-height: 200px;">
+                            <p class="mt-2 text-muted">${imageName}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+        `;
+
+        // Weight Results
+        if (results.weight && !results.weight.error) {
+            html += `
+                <div class="prediction-result">
+                    <h5><i class="fas fa-weight-hanging text-primary me-2"></i>Weight Estimation</h5>
+                    <div class="alert alert-info">
+                        <strong>Predicted Weight:</strong> ${results.weight.weight_kg} kg
+                    </div>
+                </div>
+            `;
+        }
+
+        // Classification Results
+        if (results.classification && !results.classification.error) {
+            const conf = results.classification.confidence;
+            html += `
+                <div class="prediction-result">
+                    <h5><i class="fas fa-paw text-success me-2"></i>Animal Classification</h5>
+                    <div class="alert alert-success">
+                        <strong>Predicted Class:</strong> ${results.classification.predicted_class}
+                        <br><strong>Confidence:</strong> ${conf}%
+                        <div class="progress mt-2">
+                            <div class="progress-bar bg-success" style="width: ${conf}%"></div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">All Probabilities:</small>
+                        ${Object.entries(results.classification.all_probabilities).map(([key, value]) => 
+                            `<span class="badge bg-secondary me-1">${key}: ${value}%</span>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Disease Results
+        if (results.disease && !results.disease.error) {
+            const conf = results.disease.confidence;
+            const alertClass = results.disease.predicted_class === 'Lumpy Skin' ? 'alert-danger' : 'alert-success';
+            html += `
+                <div class="prediction-result">
+                    <h5><i class="fas fa-heartbeat text-warning me-2"></i>Disease Detection</h5>
+                    <div class="alert ${alertClass}">
+                        <strong>Predicted Status:</strong> ${results.disease.predicted_class}
+                        <br><strong>Confidence:</strong> ${conf}%
+                        <div class="progress mt-2">
+                            <div class="progress-bar ${results.disease.predicted_class === 'Lumpy Skin' ? 'bg-danger' : 'bg-success'}" style="width: ${conf}%"></div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">All Probabilities:</small>
+                        ${Object.entries(results.disease.all_probabilities).map(([key, value]) => 
+                            `<span class="badge bg-secondary me-1">${key}: ${value}%</span>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Hoofed Animals Results
+        if (results.hoofed_animals && !results.hoofed_animals.error) {
+            html += `
+                <div class="prediction-result">
+                    <h5><i class="fas fa-horse text-info me-2"></i>Hoofed Animals Classification</h5>
+                    <div class="alert alert-info">
+                        <strong>Predictions:</strong>
+                        ${Object.entries(results.hoofed_animals.predictions).map(([key, value]) => 
+                            `<span class="badge ${value ? 'bg-success' : 'bg-secondary'} me-1">${key}: ${value ? 'Yes' : 'No'}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Error handling
+        Object.entries(results).forEach(([key, value]) => {
+            if (value && value.error) {
+                html += `
+                    <div class="prediction-result">
+                        <h5><i class="fas fa-exclamation-triangle text-danger me-2"></i>${key.replace('_', ' ').toUpperCase()}</h5>
+                        <div class="alert alert-danger">
+                            <strong>Error:</strong> ${value.error}
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        html += `
+                </div>
+            </div>
+        `;
+
+        resultsContent.html(html);
+        resultsSection.show();
+        
+        // Scroll to results
+        resultsSection[0].scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showError(message) {
+        resultsContent.html(`
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Error:</strong> ${message}
+            </div>
+        `);
+        resultsSection.show();
+    }
+});
+</script>
+{% endblock %}

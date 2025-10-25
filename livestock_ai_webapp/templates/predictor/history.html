@@ -1,0 +1,81 @@
+{% extends 'predictor/base.html' %}
+
+{% block title %}Prediction History - Livestock AI{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-history me-2"></i>Prediction History</h2>
+        <a href="{% url 'home' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>New Analysis
+        </a>
+    </div>
+
+    {% if predictions %}
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Analysis Type</th>
+                                <th>Results</th>
+                                <th>Confidence</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prediction in predictions %}
+                            <tr>
+                                <td>
+                                    <strong>{{ prediction.image_name }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ prediction.prediction_type|title }}</span>
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        {% if prediction.result.weight %}
+                                            <div><strong>Weight:</strong> {{ prediction.result.weight.weight_kg }} kg</div>
+                                        {% endif %}
+                                        {% if prediction.result.classification %}
+                                            <div><strong>Class:</strong> {{ prediction.result.classification.predicted_class }}</div>
+                                        {% endif %}
+                                        {% if prediction.result.disease %}
+                                            <div><strong>Disease:</strong> {{ prediction.result.disease.predicted_class }}</div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if prediction.confidence %}
+                                        <div class="progress" style="width: 100px; height: 8px;">
+                                            <div class="progress-bar" style="width: {{ prediction.confidence }}%"></div>
+                                        </div>
+                                        <small>{{ prediction.confidence|floatformat:1 }}%</small>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ prediction.created_at|date:"M d, Y H:i" }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">No Predictions Yet</h4>
+            <p class="text-muted">Start analyzing images to see your prediction history here.</p>
+            <a href="{% url 'home' %}" class="btn btn-primary">
+                <i class="fas fa-upload me-2"></i>Upload First Image
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

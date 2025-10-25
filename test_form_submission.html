@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Form Submission</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Test Form Submission</h1>
+        
+        <form method="post" enctype="multipart/form-data" action="http://127.0.0.1:8000/weight/">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="image" class="form-label">Select Image</label>
+                <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Test Submit</button>
+        </form>
+        
+        <div class="mt-4">
+            <h3>Debug Info:</h3>
+            <p>Form action: http://127.0.0.1:8000/weight/</p>
+            <p>Method: POST</p>
+            <p>Enctype: multipart/form-data</p>
+        </div>
+    </div>
+</body>
+</html>

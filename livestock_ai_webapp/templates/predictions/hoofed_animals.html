@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+
+{% block title %}Hoofed Animals Classification - Livestock AI{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-primary">
+                    <i class="bi bi-paw"></i> Hoofed Animals Classification
+                </h1>
+                <p class="lead text-muted">
+                    Multi-label classification for detailed hoofed animal analysis
+                </p>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="card">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" id="hoofedForm">
+                        {% csrf_token %}
+                        <div class="upload-area" id="uploadArea">
+                            <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
+                            <h5>Upload Hoofed Animal Image</h5>
+                            <p class="text-muted mb-3">
+                                Drag and drop your image here, or click to browse
+                            </p>
+                            <input type="file" name="image" id="imageInput" accept="image/*" required class="d-none">
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('imageInput').click()">
+                                <i class="bi bi-folder2-open"></i> Choose File
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="bi bi-cpu"></i> Analyze Hoofed Animals
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results -->
+            {% if result %}
+            <div class="result-card mt-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="mb-3">
+                            <i class="bi bi-check-circle"></i> Hoofed Animals Analysis
+                        </h3>
+                        {% if result.status == 'success' %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="mb-2">Model Type</h4>
+                                <p class="mb-0">{{ result.model_type }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Class Predictions -->
+                        {% if result.class_predictions %}
+                        <div class="mt-4">
+                            <h5>Classification Results:</h5>
+                            <div class="row">
+                                {% for class_name, prediction in result.class_predictions.items %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card {% if prediction.predicted %}border-success{% else %}border-light{% endif %}">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="mb-0">{{ class_name }}</h6>
+                                                <span class="badge {% if prediction.predicted %}bg-success{% else %}bg-secondary{% endif %}">
+                                                    {% if prediction.predicted %}Detected{% else %}Not Detected{% endif %}
+                                                </span>
+                                            </div>
+                                            <div class="mt-2">
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar {% if prediction.predicted %}bg-success{% else %}bg-secondary{% endif %}" 
+                                                         style="width: {{ prediction.confidence }}%"></div>
+                                                </div>
+                                                <small class="text-muted">{{ prediction.confidence }}% confidence</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div class="alert alert-danger">
+                            <h5><i class="bi bi-exclamation-triangle"></i> Error</h5>
+                            <p class="mb-0">{{ result.error }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="bg-white bg-opacity-25 rounded p-3">
+                            <i class="bi bi-paw display-4"></i>
+                            <p class="mb-0 mt-2">Hoofed Animals</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Results Container for AJAX -->
+            <div id="resultsContainer" style="display: none;">
+                <!-- Results will be displayed here via JavaScript -->
+            </div>
+
+            <!-- Error Display -->
+            {% if error %}
+            <div class="alert alert-danger mt-4">
+                <h5><i class="bi bi-exclamation-triangle"></i> Error</h5>
+                <p class="mb-0">{{ error }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Debug Info -->
+            {% if debug_info %}
+            <div class="alert alert-info mt-4">
+                <h5><i class="bi bi-bug"></i> Debug Info</h5>
+                <p class="mb-0">{{ debug_info }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Form Debug -->
+            <div class="card mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bug"></i> Form Debug (This will help us see what's happening)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="formDebug">
+                        <p>Form ready. Upload an image and click "Analyze Hoofed Animals" to see debug info.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> About Hoofed Animals Classification
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">
+                        This model performs multi-label classification on hoofed animals, 
+                        meaning it can detect multiple characteristics or classes simultaneously.
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-check-circle text-success"></i> Features:</h6>
+                            <ul class="list-unstyled">
+                                <li>• Multi-label detection</li>
+                                <li>• High accuracy analysis</li>
+                                <li>• Detailed confidence scores</li>
+                                <li>• Comprehensive results</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-lightbulb text-warning"></i> Best for:</h6>
+                            <ul class="list-unstyled">
+                                <li>• Detailed animal analysis</li>
+                                <li>• Research applications</li>
+                                <li>• Veterinary diagnostics</li>
+                                <li>• Scientific studies</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const form = document.getElementById('hoofedForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // File input change handler
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Update upload area display
+            uploadArea.innerHTML = `
+                <i class="bi bi-image display-4 text-success mb-3"></i>
+                <h5>Selected: ${file.name}</h5>
+                <p class="text-muted mb-3">Ready to analyze</p>
+                <button type="button" class="btn btn-outline-secondary" id="changeFileBtn">
+                    <i class="bi bi-arrow-clockwise"></i> Change File
+                </button>
+            `;
+            
+            // Add event listener to the new button
+            document.getElementById('changeFileBtn').addEventListener('click', function() {
+                document.getElementById('imageInput').click();
+            });
+        }
+    });
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // PREVENT DEFAULT FORM SUBMISSION
+        console.log('Hoofed animals form submission started');
+        
+        // Update debug info
+        document.getElementById('formDebug').innerHTML = '<p class="text-info">🔄 Form submission started...</p>';
+        
+        if (!imageInput.files[0]) {
+            alert('Please select an image file first.');
+            document.getElementById('formDebug').innerHTML = '<p class="text-danger">❌ No image file selected</p>';
+            return;
+        }
+        
+        console.log('Image file selected:', imageInput.files[0].name);
+        document.getElementById('formDebug').innerHTML = `
+            <p class="text-success">✅ Image file selected: ${imageInput.files[0].name}</p>
+            <p class="text-info">📁 File size: ${(imageInput.files[0].size / 1024).toFixed(1)} KB</p>
+            <p class="text-info">🔄 Submitting form via AJAX...</p>
+        `;
+        
+        // Show loading state
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Analyzing...';
+        submitBtn.disabled = true;
+        
+        // Submit form via AJAX
+        const formData = new FormData();
+        formData.append('image', imageInput.files[0]);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        console.log('FormData contents:');
+        for (let [key, value] of formData.entries()) {
+            console.log(key, value);
+        }
+        
+        fetch('/hoofed-animals/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Response received:', response.status);
+            document.getElementById('formDebug').innerHTML += '<p class="text-info">📡 Response received from server</p>';
+            return response.text();
+        })
+        .then(html => {
+            console.log('Response HTML received');
+            document.getElementById('formDebug').innerHTML += '<p class="text-success">✅ Server response received</p>';
+            
+            // Parse the response and extract debug info
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Check for debug info
+            const debugInfo = doc.querySelector('.alert-info');
+            if (debugInfo) {
+                document.getElementById('formDebug').innerHTML += `<p class="text-info">🔍 ${debugInfo.textContent.trim()}</p>`;
+            }
+            
+            // Check for results and display them
+            const resultCard = doc.querySelector('.result-card');
+            if (resultCard) {
+                document.getElementById('formDebug').innerHTML += '<p class="text-success">🎉 Results found in response!</p>';
+                
+                // Display the results in the main results section
+                const resultsContainer = document.querySelector('#resultsContainer');
+                if (resultsContainer) {
+                    resultsContainer.innerHTML = resultCard.innerHTML;
+                    resultsContainer.style.display = 'block';
+                }
+            }
+            
+            // Check for errors
+            const errorAlert = doc.querySelector('.alert-danger');
+            if (errorAlert) {
+                document.getElementById('formDebug').innerHTML += `<p class="text-danger">❌ Error: ${errorAlert.textContent.trim()}</p>`;
+            }
+            
+            // Reset button
+            submitBtn.innerHTML = '<i class="bi bi-paw"></i> Analyze Hoofed Animals';
+            submitBtn.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('formDebug').innerHTML += `<p class="text-danger">❌ AJAX Error: ${error}</p>`;
+            
+            // Reset button
+            submitBtn.innerHTML = '<i class="bi bi-paw"></i> Analyze Hoofed Animals';
+            submitBtn.disabled = false;
+        });
+        
+        console.log('Form submitted via AJAX, waiting for response...');
+    });
+});
+</script>
+{% endblock %}
